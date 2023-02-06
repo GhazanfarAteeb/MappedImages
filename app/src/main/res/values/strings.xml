@@ -1,0 +1,4 @@
+<resources>
+	<string name="app_name">Mapped Images</string>
+	<string name="title_activity_maps_main">MapsActivityMain</string>
+</resources>
