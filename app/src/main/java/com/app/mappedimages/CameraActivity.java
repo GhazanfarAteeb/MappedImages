@@ -86,8 +86,9 @@ public class CameraActivity extends AppCompatActivity {
     private Camera getCameraInstance() {
         Camera c = null;
         try {
-            c = android.hardware.Camera.open(0);
+            c = Camera.open();
         } catch (Exception e) {
+            e.printStackTrace();
             // Camera is not available (in use or does not exist)
         }
         return c;
