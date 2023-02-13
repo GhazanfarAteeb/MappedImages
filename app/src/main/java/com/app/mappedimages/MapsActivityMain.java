@@ -45,12 +45,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCallback {
+//    THIS WILL HELP US TO SAVE THE CURRENT LOCATION OF THE USER
     private static Location currentLocation;
+//    INSTANCE OF GOOGLE MAPS
     private GoogleMap mMap;
     private ActivityMapsMainBinding binding;
+//    ITS THE LOCATION REQUEST FOR THE MAPS IN WHICH WE DEFINE THE TIME INTERVAL OF THE LOCAITON
     private LocationRequest locationRequest;
+//    LOCATION CLIENT WHICH PROVIDES US THE CONTINUOUS LOCATION OF THE USER
     private FusedLocationProviderClient client;
+//    A STATIC LIST OF THE MARKERS WHICH WILL BE PLACED ON THE MAPS
     private static List<MarkerOptions> markersList = new ArrayList<>();
+//    THE LIST OF PERMISSIONS WHICH ARE REQUIRED FOR THIS APPLICATION TO WORK PROPERLY
     private static final String[] PERMISSIONS = {
             android.Manifest.permission.BLUETOOTH_ADMIN,
             android.Manifest.permission.BLUETOOTH,
@@ -59,30 +65,41 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
             Manifest.permission.CAMERA,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
+    // CALLBACK IN WHICH WE WILL GET THE LOCATION OF THE USER
     LocationCallback callback = new LocationCallback() {
         @Override
         public void onLocationResult(@NonNull LocationResult locationResult) {
             super.onLocationResult(locationResult);
+            //THE LAST LOCATION FUNCTION WILL PROVIDE US THE LATEST LAST LOCATION OF THE USER
             currentLocation = locationResult.getLastLocation();
+            // THE DATA CONTAINS THE IMAGE URI
             Uri data = getIntent().getData();
+            //THE GET DATA FUNCTION WILL TRY TO PLACE MARKER AGAIN AND AGAIN SO TO STOP THIS THE IMAGE URI IS STORED IN THE ABOVE VARIABLE
+            // AND THEN THE DATA OF THE INTENT IS SET TO NULL SO THERE SHOULD BE NO REPETATION OF THE MARKER
             getIntent().setData(null);
             if (data != null) {
+//                CREATING THE INSTANCE OF MARKER TO BE PLACED ON THE MAPS
                 MarkerOptions marker = new MarkerOptions();
                 marker.draggable(false);
                 marker.position(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
                 marker.title(data.toString());
                 marker.visible(true);
+                // ADDING MARKER TO THE LIST SO THE MARKER WILL KEEP SHOWING DESPITE THE SCREEN IS BEING CHANGED BECAUSE MARKER LIST IS STATIC
                 markersList.add(marker);
                 if (mMap != null) {
+                    // THIS LOOP IS USED TO PLACE ALL THE MARKERS ON THE MAP
                     for (MarkerOptions m: markersList) {
                         mMap.addMarker(m);
                     }
+//                    THIS WILL ZOOM THE MARKER TO THE CURRENT ADDED MARKER
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18));
                 }
             }
         }
     };
 
+    // THIS WILL INITIALIZE THE FUSED LOCATION PROVIDER CLIENT AND THEN CHECK THE PERMISSION IF THE PERMISSIONS ARE GRANTED THEN THE CLIENT
+    // WILL REQUEST FOR LOCATION UPDATES
     private void startLocationUpdates() {
         client = LocationServices.getFusedLocationProviderClient(this);
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -91,6 +108,7 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
         }
         client.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper());
     }
+    //SETTING UP THE INTERVAL OF THE LOCATION REQUEST
 
     private void createLocationRequest() {
         locationRequest = LocationRequest.create()
@@ -105,9 +123,11 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
 
         binding = ActivityMapsMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // ENABLING THE LOCATION SERVICES IF THE PERMISSIONS ARE GIVEN
         if (PermissionUtils.checkPermission(MapsActivityMain.this, android.Manifest.permission.ACCESS_FINE_LOCATION) && PermissionUtils.checkPermission(MapsActivityMain.this, android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
             enableLocationSettings();
         } else {
+            // IN CASE IF PERMISSIONS ARE NOT PROVIDED THEN THE PERMISSIONS DIALOG BOX WILL APPEAR DUE TO THE FOLLOWING CODE AND WILL ASK FOR PERMISSIONS
             ActivityResultLauncher<String[]> permissionRequest = registerForActivityResult(
                     new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                         Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
@@ -131,6 +151,7 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
     }
 
 
+    // THIS FUNCTION WILL WORK WHEN THE MAP IS READY TO SHOW
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -138,6 +159,7 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
 //                marker.hideInfoWindow();
+                // THIS DIALOG BOX WILL SHOW THE IMAGE WHEN ANY MARKER IS CLICKED
                 AlertDialog dialog = new AlertDialog.Builder(MapsActivityMain.this)
                         .create();
                 ItemDialogBinding itemDialogBinding = ItemDialogBinding.inflate(LayoutInflater.from(MapsActivityMain.this));
@@ -151,6 +173,7 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
     }
 
     public void enableLocationSettings() {
+        // CHECKING IF THE LOCATION SERVICES ARE RUNNING OR NOT IF NOT RUNNING THEN THE LOCATION REQUEST WILL BE MADE FOR TURNING ON THE LOCATION
         if (!isLocationEnabled(this)) {
 
             LocationRequest locationRequest = LocationRequest.create()
@@ -178,6 +201,7 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
         }
     }
 
+//    THIS FUNCTION WILL CHECK THE LOCATION SERVICES
     public static boolean isLocationEnabled(Context context) {
         LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
@@ -198,6 +222,7 @@ public class MapsActivityMain extends AppCompatActivity implements OnMapReadyCal
         return (gps_enabled || network_enabled);
     }
 
+    // WHEN THE PERMISSIONS ARE GRANTED THEN THE LOCATION SERVICES WILL BE REQUESTED BY THIS ENABLE LOCATION SETTINGS FUNCTION
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

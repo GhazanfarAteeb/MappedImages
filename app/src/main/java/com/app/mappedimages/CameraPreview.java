@@ -10,16 +10,21 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 
+//THIS CLASS IS RESPONSIBLE FOR CREATING THE CAMERA PREVIEW WHICH IS SHOWN ON THE SURFACE VIEW
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
+//    CAMERA INSTANCE
     private Camera camera;
+//    SURFACE VIEW HOLDER TO SHOW THE PREVIEW
     private SurfaceHolder holder;
     public CameraPreview(Context context, Camera camera) {
         super(context);
+//        INITIALIZING THE HOLDER AND CAMERA AND ITS CALLBACKS
         this.camera = camera;
         holder = getHolder();
         holder.addCallback(this);
     }
 
+    // WHEN THE SURFACE HOLDER IS CREATED THEN IT WILL START SHOWING THE CAMERA DISPLAY ON THE SURFACE VIEW
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         // The Surface has been created, now tell the camera where to draw the preview.
@@ -35,7 +40,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Take care of releasing the Camera preview in your activity.
     }
-
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {

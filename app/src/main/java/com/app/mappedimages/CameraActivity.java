@@ -32,12 +32,15 @@ public class CameraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityCameraBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // THIS WILL CHECK THE READ AND WRITE PERMISSIONS AND WILL REQUEST FOR PERMISSIONS GRANTING
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // Permission is not granted
             // Request the permission
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
         else {
+//            THIS FUNCTION WILL OPEN THE CAMERA
             openCamera();
         }
 
@@ -45,15 +48,19 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
+        // INITIALIZING THE CAMERA INSTANCE
         camera = getCameraInstance();
         if(camera != null) {
+            // SETTING UP THE CAMERA SURFACE PROPERLY
             camera.setDisplayOrientation(90);
         }
         else {
             Log.d("CAMERA", "camera is null");
         }
+        // INITIALIZING THE DEFINED CAMERA PREVIEW CLASS
         cameraPreview = new CameraPreview(this, camera);
         binding.cameraPreview.addView(cameraPreview);
+        // WHEN THE CAMERA SCREEN IS CLICKED THIS WILL AUTO FOCUS THE CAMERA
         binding.cameraPreview.setOnClickListener(view -> {
             Camera.AutoFocusCallback autoFocus = (success, camera) -> {
                 if (success) {
@@ -64,6 +71,7 @@ public class CameraActivity extends AppCompatActivity {
             };
             camera.autoFocus(autoFocus);
         });
+        // WHEN THE CAMERA BUTTON IS CLICKED IT WILL CAPTURE THE IMAGE
         binding.fabCapturePicture.setOnClickListener(view -> {
             camera.takePicture(new Camera.ShutterCallback() {
                 @Override
@@ -73,6 +81,7 @@ public class CameraActivity extends AppCompatActivity {
             }, null, new Camera.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
+                    // WHEN THE PICTURE IS TAKEN IT WILL BE SAVED IN THE GALLARY
                     Intent intent = new Intent(CameraActivity.this, PreviewActivity.class);
                     File file = writeImage(data);
                     System.out.println(file.toURI());
@@ -83,6 +92,7 @@ public class CameraActivity extends AppCompatActivity {
         });
     }
 
+    // FUNCTION TO OPEN AND INITIALIZING THE CAMERA
     private Camera getCameraInstance() {
         Camera c = null;
         try {
@@ -110,6 +120,7 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
+    // WRITING OF FILE TO THE LOCAL STORAGE WITH THE CURRENT SYSTEM TIMESTAMP AS THE NAME WITH THE PREFIX IMG_
     private File writeImage(byte[] data) {
         Bitmap image = BitmapFactory.decodeByteArray(data, 0 , data.length);
         String fileName = "IMG_"+ System.currentTimeMillis()+".jpg";
